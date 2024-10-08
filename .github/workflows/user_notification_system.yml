@@ -63,7 +63,7 @@ jobs:
 
       - name: Find PR author email for non-web submissions
         if: ${{ !inputs.is_automerge_web }}
-        uses: evvanErb/get-github-email-by-username-action@v2.0
+        uses: evvanErb/get-github-email-by-username-action@v4.0
         id: getemail
         with:
           github-username: ${{inputs.pr_username}}
@@ -112,7 +112,7 @@ jobs:
       
       - name: Upload email as artifact
         if: inputs.action_type == 'send_email'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: email-artifact
           path: email.txt
@@ -129,7 +129,7 @@ jobs:
           fetch-depth: 0
           
       - name: Download email artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: email-artifact
           
