@@ -169,7 +169,7 @@ jobs:
     
       - name: Set PLUGIN_INFO as an environment variable
         run: |
-          PLUGIN_INFO=$(cat artifact-directory/plugin-info.json)
+          PLUGIN_INFO=$(cat artifact-directory/plugin-info2.json)
           USER_EMAIL=$(echo "$PLUGIN_INFO" | jq -r '.email')
           echo "::add-mask::$USER_EMAIL"  # readd a mask when bringing email back from artifact
           echo "PLUGIN_INFO=${PLUGIN_INFO}" >> $GITHUB_ENV
