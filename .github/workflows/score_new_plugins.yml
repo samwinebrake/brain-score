@@ -126,9 +126,10 @@ jobs:
 
       - name: Decrypt and mask user email
         run: |
+          echo "here is encrypted email: ${{ needs.extract_email.outputs.extracted_email }}"
           DECRYPTED_EMAIL=$(echo "${{ needs.extract_email.outputs.extracted_email }}" | openssl enc -aes-256-cbc -a -d -salt -pass pass:${{ secrets.EMAIL_ENCRYPTION_KEY }})
-          echo "::add-mask::$DECRYPTED_EMAIL"
           echo "USER_EMAIL=${DECRYPTED_EMAIL}" >> $GITHUB_ENV
+          echo "USER_EMAIL=${DECRYPTED_EMAIL}"
 
       - name: Update PLUGIN_INFO
         run: |
