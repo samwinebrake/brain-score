@@ -97,7 +97,6 @@ jobs:
         run: |
           BS_UID="$(echo $PR_TITLE | sed -E 's/.*\(user:([^)]+)\).*/\1/')"
           EMAIL=$(python -c "from brainscore_core.submission.database import email_from_uid; from brainscore_core.submission.endpoints import UserManager; user_manager=UserManager(db_secret='${{ secrets.BSC_DATABASESECRET }}'); print(email_from_uid($BS_UID))")
-          echo "::add-mask::$EMAIL" # Mask the EMAIL
           echo "EMAIL=$EMAIL" >> $GITHUB_ENV
 
       - name: Encrypt and set job-level output for email
@@ -105,6 +104,7 @@ jobs:
         run: |
           ENCRYPTED_EMAIL=$(echo -n $EMAIL | openssl enc -aes-256-cbc -a -salt -pass pass:${{ secrets.EMAIL_ENCRYPTION_KEY }})
           echo "EMAIL=$ENCRYPTED_EMAIL" >> $GITHUB_OUTPUT
+          echo "EMAIL=$ENCRYPTED_EMAIL"
           
       - name: Write email to file
         if: inputs.action_type == 'send_email'
