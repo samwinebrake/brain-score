@@ -142,13 +142,13 @@ jobs:
 
       - name: Write PLUGIN_INFO to a json file
         run: |
-          echo "$PLUGIN_INFO" > plugin-info.json
+          echo "$PLUGIN_INFO" > plugin-info2.json
       
       - name: Upload PLUGIN_INFO as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: plugin-info
-          path: plugin-info.json
+          name: plugin-info2
+          path: plugin-info2.json
 
   run_scoring:
     name: Score plugins
@@ -164,7 +164,7 @@ jobs:
       - name: Download PLUGIN_INFO artifact
         uses: actions/download-artifact@v4
         with:
-          name: plugin-info
+          name: plugin-info2
           path: artifact-directory
     
       - name: Set PLUGIN_INFO as an environment variable
