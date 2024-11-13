@@ -91,6 +91,7 @@ jobs:
           cat pyproject.toml
           echo "=== bump-my-version config ==="
           bump-my-version show
+          bump-my-version show --config-file pyproject.toml
 
       - name: Debug tag information
         run: |
@@ -126,7 +127,8 @@ jobs:
           echo "Latest tag: $LATEST_TAG (version: $CURRENT_VERSION)"
           
           echo "=== Performing bump ==="
-          bump-my-version --current-version $CURRENT_VERSION bump ${{ steps.bump-type.outputs.type }} --verbose
+          # bump-my-version --current-version $CURRENT_VERSION bump ${{ steps.bump-type.outputs.type }} --verbose
+          bump-my-version bump ${{ steps.bump-type.outputs.type }} --config-file pyproject.toml --verbose
           
           NEW_VERSION=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
