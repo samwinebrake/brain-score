@@ -66,6 +66,7 @@ jobs:
         id: run_metadata
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BSC_DATABASESECRET: "brainscore-1-ohio-cred-migrated"
         run: |
           # Split the comma-separated plugin-dir input into an array.
           IFS=',' read -ra PLUGIN_DIRS <<< "${{ inputs.plugin-dir }}"
