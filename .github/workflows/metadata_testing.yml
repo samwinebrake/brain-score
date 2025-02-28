@@ -99,11 +99,13 @@ jobs:
 
       - name: Auto-approve PRs
         if: steps.run_metadata.outputs.pr_numbers != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.APPROVAL_TOKEN }}
         run: |
           IFS=',' read -ra PR_ARRAY <<< "${{ steps.run_metadata.outputs.pr_numbers }}"
           for pr in "${PR_ARRAY[@]}"; do
             echo "Auto-approving PR #$pr" 1>&2
-            gh pr review $pr --approve --repo ${{ github.repository }} --token ${{ secrets.APPROVAL_TOKEN }}
+            gh pr review $pr --approve --repo ${{ github.repository }}
           done
 
       - name: Wait for Status Checks
