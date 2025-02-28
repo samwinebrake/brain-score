@@ -145,9 +145,8 @@ jobs:
           path: plugin-info.json
 
   process_metadata:
-    name: Process metadata changes only
+    name: Process metadata changes
     needs: process_submission
-    if: needs.process_submission.outputs.METADATA_ONLY == 'true'
     uses: ./.github/workflows/metadata_testing.yml
     with:
       plugin-dir: ${{ needs.process_submission.outputs.PLUGIN_DIRS }}
