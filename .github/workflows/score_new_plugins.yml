@@ -29,6 +29,7 @@ jobs:
       METADATA_ONLY: ${{ steps.check_metadata_only.outputs.only_metadata }}
       PLUGIN_DIRS: ${{ steps.derive_plugin_dirs.outputs.PLUGIN_DIRS }}
       PLUGIN_TYPE: ${{ steps.derive_plugin_dirs.outputs.PLUGIN_TYPE }}
+      RUN_METADATA: ${{  steps.check_metadata.outputs.RUN_METADATA  }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -63,7 +64,6 @@ jobs:
         run: |
           echo "PLUGIN_INFO='$(python -c 'from brainscore_core.plugin_management.parse_plugin_changes import get_scoring_info; get_scoring_info("${{ env.CHANGED_FILES }}", "brainscore_vision")')'"  >> $GITHUB_OUTPUT
 
-        # teting metadata things here  
       - name: Check if only metadata changed
         id: check_metadata_only
         run: |
@@ -82,26 +82,64 @@ jobs:
 
       - name: Derive Plugin Directories
         id: derive_plugin_dirs
+        if: fromJson(steps.getpluginfo.outputs.PLUGIN_INFO).modifies_plugins == true
         run: |
-          plugin_dirs=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep "metadata.yml" | xargs -n 1 dirname | sort | uniq | paste -sd, -)
+          # Extract all plugin directories from changed files
+          plugin_dirs=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E '^(models|benchmarks)/' | cut -d'/' -f1-2 | sort | uniq | paste -sd, - || echo "")
           echo "PLUGIN_DIRS=${plugin_dirs}" >> $GITHUB_OUTPUT
           
-          # Get the first metadata file from the changed files
-          first_file=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep "metadata.yml" | head -n 1)
-          # Split the path on '/' and take the second field (the plugin type)
-          plugin_type=$(echo "$first_file" | cut -d'/' -f2)
+          # Determine plugin type from directory structure
+          plugin_type=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E '^(models|benchmarks)/' | head -n 1 | cut -d'/' -f1 || echo "")
+          
+          if [ -z "$plugin_type" ] && [ -n "$plugin_dirs" ]; then
+            echo "Error: Found plugin directories but couldn't determine plugin type" 1>&2
+            exit 1
+          fi
+          
           echo "PLUGIN_TYPE=${plugin_type}" >> $GITHUB_OUTPUT
           echo "Derived plugin directories: ${plugin_dirs}" 1>&2
           echo "Derived plugin type: ${plugin_type}" 1>&2
 
-      # If only metadata changed, update db directly (no PR)
-      # - name: Process metadata directly
-      #   if: steps.check_metadata_only.outputs.only_metadata == 'true'
-      #   uses: ./.github/workflows/metadata_testing.yml
-      #   with:
-      #     plugin-dir:  ${{ steps.derive_plugin_dirs.outputs.PLUGIN_DIRS }}
-      #     plugin-type:  ${{ steps.derive_plugin_dirs.outputs.PLUGIN_TYPE }}
-      #     db-connection: true
+      - name: Check metadata status
+        if: fromJson(steps.getpluginfo.outputs.PLUGIN_INFO).modifies_plugins == true
+        id: check_metadata
+        run: |
+          # First check out the PR branch to access new directories
+          git fetch origin pull/${{ github.event.number }}/head:pr-branch
+          git checkout pr-branch
+          
+          # Check if metadata.yml is in the PR changes
+          metadata_in_pr=false
+          if echo "${{ env.CHANGED_FILES }}" | grep -q "metadata.yml"; then
+            metadata_in_pr=true
+            echo "Metadata changes found in PR" 1>&2
+          fi
+          echo "METADATA_IN_PR=${metadata_in_pr}" >> $GITHUB_OUTPUT
+          
+          # Get all plugin directories affected by this PR
+          IFS=',' read -ra DIRS <<< "${{ steps.derive_plugin_dirs.outputs.PLUGIN_DIRS }}"
+          
+          # Check if metadata.yml exists in each plugin directory
+          metadata_missing=false
+          for dir in "${DIRS[@]}"; do
+            if [ -n "$dir" ] && [ ! -f "${dir}/metadata.yml" ]; then
+              metadata_missing=true
+              echo "Metadata is missing in directory: ${dir}" 1>&2
+              break
+            fi
+          done
+          
+          echo "METADATA_MISSING=${metadata_missing}" >> $GITHUB_OUTPUT
+          
+          # Determine if we should run metadata processing
+          if [ "$metadata_in_pr" = "true" ] || [ "$metadata_missing" = "true" ]; then
+            echo "RUN_METADATA=true" >> $GITHUB_OUTPUT
+          else
+            echo "RUN_METADATA=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Switch back to the original branch
+          git checkout -
 
       - name: Check if scoring needed
         if: steps.check_metadata_only.outputs.only_metadata == 'false'
@@ -147,7 +185,7 @@ jobs:
   process_metadata:
     name: Process metadata changes
     needs: process_submission
-    if: needs.process_submission.outputs.RUN_SCORING == 'True'
+    if: needs.process_submission.outputs.RUN_SCORING == 'True' && needs.process_submission.outputs.RUN_METADATA == 'true'
     uses: ./.github/workflows/metadata_testing.yml
     with:
       plugin-dir: ${{ needs.process_submission.outputs.PLUGIN_DIRS }}
