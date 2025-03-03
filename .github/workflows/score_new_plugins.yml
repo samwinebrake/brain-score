@@ -82,7 +82,7 @@ jobs:
 
       - name: Derive Plugin Directories
         id: derive_plugin_dirs
-        if: fromJson(steps.getpluginfo.outputs.PLUGIN_INFO).modifies_plugins == true
+        if: steps.check_metadata_only.outputs.modifies_plugins == 'true'
         run: |
           # Extract all plugin directories from changed files
           plugin_dirs=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E '^(models|benchmarks)/' | cut -d'/' -f1-2 | sort | uniq | paste -sd, - || echo "")
@@ -101,7 +101,7 @@ jobs:
           echo "Derived plugin type: ${plugin_type}" 1>&2
 
       - name: Check metadata status
-        if: fromJson(steps.getpluginfo.outputs.PLUGIN_INFO).modifies_plugins == true
+        if: steps.check_metadata_only.outputs.modifies_plugins == 'true'
         id: check_metadata
         run: |
           # First check out the PR branch to access new directories
