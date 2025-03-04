@@ -84,14 +84,14 @@ jobs:
         id: derive_plugin_dirs
         if: steps.check_metadata_only.outputs.modifies_plugins == 'true'
         run: |
-          # Extract plugin directories from changed files by removing the /metadata.yml part
-          plugin_dirs=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E 'brainscore_vision/(models|benchmarks)/' | sed 's|/metadata\.yml$||' | sort | uniq | paste -sd, - || echo "")
+          # Extract plugin directories from changed files - works with or without metadata.yml
+          plugin_dirs=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E 'brainscore_vision/(models|benchmarks)/' | awk -F'/' '{print $1"/"$2"/"$3}' | sort | uniq | paste -sd, - || echo "")
           echo "PLUGIN_DIRS=${plugin_dirs}" >> $GITHUB_OUTPUT
           
           # Determine plugin type from directory structure
           plugin_type=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E 'brainscore_vision/(models|benchmarks)/' | grep -o -E '(models|benchmarks)' | head -n 1 || echo "")
-          
           echo "PLUGIN_TYPE=${plugin_type}" >> $GITHUB_OUTPUT
+          
           echo "Derived plugin directories: ${plugin_dirs}" 1>&2
           echo "Derived plugin type: ${plugin_type}" 1>&2
 
@@ -180,7 +180,7 @@ jobs:
   process_metadata:
     name: Process metadata changes
     needs: process_submission
-    if: needs.process_submission.outputs.RUN_SCORING == 'True' && needs.process_submission.outputs.RUN_METADATA == 'true'
+    if: needs.process_submission.outputs.RUN_METADATA == 'true'
     uses: ./.github/workflows/metadata_testing.yml
     with:
       plugin-dir: ${{ needs.process_submission.outputs.PLUGIN_DIRS }}
