@@ -85,16 +85,11 @@ jobs:
         if: steps.check_metadata_only.outputs.modifies_plugins == 'true'
         run: |
           # Extract all plugin directories from changed files
-          plugin_dirs=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E '^(models|benchmarks)/' | cut -d'/' -f1-2 | sort | uniq | paste -sd, - || echo "")
+          plugin_dirs=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E 'brainscore_vision/(models|benchmarks)/' | sed -E 's|brainscore_vision/||' | cut -d'/' -f1-2 | sort | uniq | paste -sd, - || echo "")
           echo "PLUGIN_DIRS=${plugin_dirs}" >> $GITHUB_OUTPUT
           
           # Determine plugin type from directory structure
-          plugin_type=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E '^(models|benchmarks)/' | head -n 1 | cut -d'/' -f1 || echo "")
-          
-          if [ -z "$plugin_type" ] && [ -n "$plugin_dirs" ]; then
-            echo "Error: Found plugin directories but couldn't determine plugin type" 1>&2
-            exit 1
-          fi
+          plugin_type=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E 'brainscore_vision/(models|benchmarks)/' | sed -E 's|brainscore_vision/||' | head -n 1 | cut -d'/' -f1 || echo "")
           
           echo "PLUGIN_TYPE=${plugin_type}" >> $GITHUB_OUTPUT
           echo "Derived plugin directories: ${plugin_dirs}" 1>&2
