@@ -84,12 +84,12 @@ jobs:
         id: derive_plugin_dirs
         if: steps.check_metadata_only.outputs.modifies_plugins == 'true'
         run: |
-          # Extract all plugin directories from changed files
-          plugin_dirs=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E 'brainscore_vision/(models|benchmarks)/' | sed -E 's|brainscore_vision/||' | cut -d'/' -f1-2 | sort | uniq | paste -sd, - || echo "")
+          # Extract plugin directories from changed files
+          plugin_dirs=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E 'brainscore_vision/(models|benchmarks)/' | sed -E 's|/[^/]+/metadata\.yml.*$||' | sort | uniq | paste -sd, - || echo "")
           echo "PLUGIN_DIRS=${plugin_dirs}" >> $GITHUB_OUTPUT
           
           # Determine plugin type from directory structure
-          plugin_type=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E 'brainscore_vision/(models|benchmarks)/' | sed -E 's|brainscore_vision/||' | head -n 1 | cut -d'/' -f1 || echo "")
+          plugin_type=$(echo "${{ env.CHANGED_FILES }}" | tr ' ' '\n' | grep -E 'brainscore_vision/(models|benchmarks)/' | grep -o -E '(models|benchmarks)' | head -n 1 || echo "")
           
           echo "PLUGIN_TYPE=${plugin_type}" >> $GITHUB_OUTPUT
           echo "Derived plugin directories: ${plugin_dirs}" 1>&2
