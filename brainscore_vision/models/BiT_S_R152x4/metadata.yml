@@ -1,6 +1,6 @@
 models:
     BiT_S_R152x4:
-        architecture: DCNN
+        architecture: testing
         model_family: efficientnet
         total_parameter_count: 9109994
         trainable_parameter_count: 9109994
