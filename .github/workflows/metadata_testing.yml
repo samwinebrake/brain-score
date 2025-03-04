@@ -80,20 +80,19 @@ jobs:
           pr_numbers=""
           for dir in "${PLUGIN_DIRS[@]}"; do
             echo "Processing metadata in directory: $dir" 1>&2
-            if [ "${{ inputs.db-connection }}" = "true" ]; then
-              # Process metadata and update DB directly.
-              python -m brainscore_core.plugin_management.handle_metadata --plugin-dir "$dir" --plugin-type "${{ inputs.plugin-type }}" --db-connection
+            # if [ "${{ inputs.db-connection }}" = "true" ]; then
+            #   # Process metadata and update DB directly.
+            python -m brainscore_core.plugin_management.handle_metadata --plugin-dir "$dir" --plugin-type "${{ inputs.plugin-type }}" --db-connection
+            # else
+            # Create a PR if necessary.
+            pr_num=$(python -m brainscore_core.plugin_management.handle_metadata --plugin-dir "$dir" --plugin-type "${{ inputs.plugin-type }}" --db-connection)
+            echo "PR number for $dir: $pr_num" 1>&2
+            # Append to the list (if multiple directories are provided)
+            if [ -z "$pr_numbers" ]; then
+              pr_numbers="$pr_num"
             else
-              # Create a PR if necessary.
-              pr_num=$(python -m brainscore_core.plugin_management.handle_metadata --plugin-dir "$dir" --plugin-type "${{ inputs.plugin-type }}")
-              echo "PR number for $dir: $pr_num" 1>&2
-              # Append to the list (if multiple directories are provided)
-              if [ -z "$pr_numbers" ]; then
-                pr_numbers="$pr_num"
-              else
-                pr_numbers="$pr_numbers,$pr_num"
+              pr_numbers="$pr_numbers,$pr_num"
               fi
-            fi
           done
           echo "pr_numbers=${pr_numbers}" >> $GITHUB_OUTPUT
 
