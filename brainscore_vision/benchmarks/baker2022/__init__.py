@@ -1,3 +1,4 @@
+
 from brainscore_vision import benchmark_registry
 from brainscore_vision.benchmarks.baker2022.benchmark import Baker2022AccuracyDeltaFrankenstein, \
     Baker2022AccuracyDeltaFragmented, Baker2022InvertedAccuracyDelta
