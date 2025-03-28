@@ -1,3 +1,4 @@
+
 from brainscore_vision import benchmark_registry
 from brainscore_vision.benchmarks.bmd2024.benchmark import BMD2024AccuracyDistance
 
