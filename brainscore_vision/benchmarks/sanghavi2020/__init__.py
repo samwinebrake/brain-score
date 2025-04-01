@@ -1,3 +1,4 @@
+
 from brainscore_vision import benchmark_registry
 from .benchmarks.sanghavi2020_benchmark import DicarloSanghavi2020V4PLS, DicarloSanghavi2020ITPLS
 
