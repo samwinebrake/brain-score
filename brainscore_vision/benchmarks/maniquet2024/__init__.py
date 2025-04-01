@@ -1,3 +1,4 @@
+
 from brainscore_vision import benchmark_registry
 from .benchmark import Maniquet2024ConfusionSimilarity, Maniquet2024TasksConsistency
 
