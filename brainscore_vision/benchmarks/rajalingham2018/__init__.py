@@ -1,3 +1,4 @@
+
 from brainscore_vision import benchmark_registry
 from .benchmarks.benchmark import DicarloRajalingham2018I2n
 
