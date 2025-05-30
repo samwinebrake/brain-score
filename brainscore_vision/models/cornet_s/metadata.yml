@@ -1,14 +1,15 @@
 models:
-  dummy-model:
-    architecture: null
-    brainscore_link: null
-    extra_notes: null
-    huggingface_link: null
-    model_family: null
-    model_size_MB: null
-    task_specialization: null
-    total_layers: null
-    total_parameter_count: null
-    trainable_layers: null
-    trainable_parameter_count: null
-    training_dataset: null
+    CORnet-S:
+        architecture: DCNN, RNN, SKIP_CONNECTIONS
+        model_family: cornet
+        total_parameter_count: 53416616
+        trainable_parameter_count: 53416616
+        total_layers: 72
+        trainable_layers: 18
+        model_size_mb: 213.67
+        training_dataset: null
+        task_specialization: null
+        brainscore_link: https://github.com/brain-score/vision/tree/master/brainscore_vision/models/cornet_s
+        huggingface_link: null
+        extra_notes: null
+        runnable: True
